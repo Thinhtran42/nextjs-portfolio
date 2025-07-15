@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Home, Plus, List, Database, LogOut, User } from 'lucide-react';
+import { Home, Plus, List, LogOut, User, Menu, X, Folder, Briefcase, Settings, Database } from 'lucide-react';
 import { AuthProvider } from '@/components/auth/AuthContext';
 import { AuthGuard } from '@/components/auth/AuthGuard';
 import { useAuth } from '@/components/auth/AuthContext';
@@ -16,14 +16,33 @@ function AdminLayoutContent({
 }) {
   const pathname = usePathname();
   const { user, signOut } = useAuth();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const navItems = [
-    { href: '/admin', label: 'Dashboard', icon: Home },
-    { href: '/admin/projects', label: 'Projects', icon: List },
-    { href: '/admin/projects/new', label: 'Add Project', icon: Plus },
-    { href: '/admin/experiences', label: 'Experiences', icon: List },
-    { href: '/admin/experiences/new', label: 'Add Experience', icon: Plus },
-    { href: '/admin/migrate', label: 'Migrate Data', icon: Database },
+  const navGroups = [
+    {
+      title: 'Overview',
+      items: [
+        { href: '/admin', label: 'Dashboard', icon: Home },
+      ]
+    },
+    {
+      title: 'Content',
+      items: [
+        { href: '/admin/projects', label: 'Projects', icon: Folder },
+        { href: '/admin/projects/new', label: 'New Project', icon: Plus },
+        { href: '/admin/experiences', label: 'Experiences', icon: Briefcase },
+        { href: '/admin/experiences/new', label: 'New Experience', icon: Plus },
+      ]
+    },
+    {
+      title: 'Settings',
+      items: [
+        { href: '/admin/portfolio', label: 'Portfolio Info', icon: Settings },
+        { href: '/admin/migrate-portfolio', label: 'Import Data', icon: Database },
+        { href: '/admin/debug-permissions', label: 'Debug Permissions', icon: User },
+        { href: '/admin/debug-browser', label: 'Browser Debug', icon: Settings },
+      ]
+    }
   ];
 
   const handleLogout = async () => {
@@ -36,22 +55,29 @@ function AdminLayoutContent({
 
   return (
     <AuthGuard>
-      <div className="min-h-screen bg-gray-50">
-        {/* Navigation */}
-        <nav className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between h-16">
-              <div className="flex">
-                {/* Logo */}
-                <div className="flex-shrink-0 flex items-center">
-                  <Link href="/admin" className="text-xl font-bold text-gray-900">
-                    Portfolio Admin
-                  </Link>
-                </div>
-                
-                {/* Navigation links */}
-                <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-                  {navItems.map((item) => {
+      <div className="min-h-screen bg-gray-50 flex">
+        {/* Sidebar */}
+        <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0`}>
+          <div className="flex items-center justify-between h-16 px-4 border-b">
+            <Link href="/admin" className="text-lg font-bold text-gray-900">
+              Portfolio Admin
+            </Link>
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="lg:hidden p-2 rounded-md text-gray-600 hover:bg-gray-100"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          
+          <nav className="mt-4 px-2">
+            {navGroups.map((group) => (
+              <div key={group.title} className="mb-6">
+                <h3 className="px-3 mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                  {group.title}
+                </h3>
+                <div className="space-y-1">
+                  {group.items.map((item) => {
                     const Icon = item.icon;
                     const isActive = pathname === item.href;
                     
@@ -59,50 +85,68 @@ function AdminLayoutContent({
                       <Link
                         key={item.href}
                         href={item.href}
-                        className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+                        onClick={() => setSidebarOpen(false)}
+                        className={`flex items-center px-3 py-2 text-sm font-medium rounded-md ${
                           isActive
-                            ? 'border-blue-500 text-gray-900'
-                            : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                            ? 'bg-blue-100 text-blue-700'
+                            : 'text-gray-700 hover:bg-gray-100'
                         }`}
                       >
-                        <Icon className="h-4 w-4 mr-2" />
+                        <Icon className="h-4 w-4 mr-3" />
                         {item.label}
                       </Link>
                     );
                   })}
                 </div>
               </div>
+            ))}
+          </nav>
+        </div>
 
-              {/* Right side */}
-              <div className="flex items-center space-x-4">
-                {/* User info */}
-                {user && (
-                  <div className="flex items-center space-x-2 text-sm text-gray-600">
-                    <User className="h-4 w-4" />
-                    <span>{user.displayName || user.email}</span>
-                  </div>
-                )}
-
-                <Button asChild variant="outline">
-                  <Link href="/">
-                    <Home className="h-4 w-4 mr-2" />
-                    View Site
-                  </Link>
-                </Button>
-
-                <Button onClick={handleLogout} variant="outline">
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Logout
-                </Button>
-              </div>
-            </div>
-          </div>
-        </nav>
+        {/* Overlay for mobile */}
+        {sidebarOpen && (
+          <div className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden" onClick={() => setSidebarOpen(false)} />
+        )}
 
         {/* Main content */}
-        <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-          {children}
-        </main>
+        <div className="flex-1 flex flex-col">
+          {/* Top header */}
+          <header className="bg-white shadow-sm border-b h-16 flex items-center justify-between px-4 lg:px-6">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="lg:hidden p-2 rounded-md text-gray-600 hover:bg-gray-100"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+
+            <div className="flex items-center space-x-4">
+              {/* User info */}
+              {user && (
+                <div className="hidden sm:flex items-center space-x-2 text-sm text-gray-600">
+                  <User className="h-4 w-4" />
+                  <span className="max-w-32 truncate">{user.displayName || user.email}</span>
+                </div>
+              )}
+
+              <Button asChild variant="outline" size="sm">
+                <Link href="/">
+                  <Home className="h-4 w-4 mr-2" />
+                  View Site
+                </Link>
+              </Button>
+
+              <Button onClick={handleLogout} variant="outline" size="sm">
+                <LogOut className="h-4 w-4 mr-2" />
+                Logout
+              </Button>
+            </div>
+          </header>
+
+          {/* Page content */}
+          <main className="flex-1 p-4 lg:p-6 overflow-auto">
+            {children}
+          </main>
+        </div>
       </div>
     </AuthGuard>
   );

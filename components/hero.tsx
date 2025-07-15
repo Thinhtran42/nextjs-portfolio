@@ -3,20 +3,60 @@
 import { useState, useEffect } from "react";
 import { ArrowDown, Github, Linkedin, Mail, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { personalInfoService } from "@/lib/portfolioService";
+import { PersonalInfo } from "@/types/portfolio";
 
 export function Hero() {
   const [text, setText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [loopNum, setLoopNum] = useState(0);
   const [typingSpeed, setTypingSpeed] = useState(100);
+  const [personalData, setPersonalData] = useState<PersonalInfo | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const words = [
-    "Node.js Developer",
-    "Backend Developer",
-    "Full Stack Developer",
-    "Mobile Developer",
-    "Front End Developer",
-  ];
+  // Fallback data if Firebase data is not available
+  const fallbackData = {
+    name: "Thinh Tran",
+    title: "Full Stack Developer",
+    description: "Passionate about creating exceptional digital experiences with clean code and innovative solutions. Let's build something amazing together.",
+    typingTexts: [
+      "Node.js Developer",
+      "Backend Developer", 
+      "Full Stack Developer",
+      "Mobile Developer",
+      "Front End Developer",
+    ],
+    location: "Ho Chi Minh City, Vietnam",
+    socialLinks: {
+      github: "https://github.com/Thinhtran42",
+      linkedin: "https://www.linkedin.com/in/thinh-tran013/",
+      twitter: "",
+      email: "tranthinhh013@gmail.com"
+    },
+    resumeUrl: ""
+  };
+
+  useEffect(() => {
+    const fetchPersonalData = async () => {
+      try {
+        const data = await personalInfoService.getPersonalInfo();
+        if (data) {
+          setPersonalData(data);
+        }
+      } catch (error) {
+        console.error('Error fetching personal data:', error);
+        // Will use fallback data
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPersonalData();
+  }, []);
+
+  // Use Firebase data if available, otherwise use fallback
+  const currentData = personalData || fallbackData;
+  const words = currentData.typingTexts;
 
   useEffect(() => {
     const handleTyping = () => {
@@ -43,6 +83,33 @@ export function Hero() {
     return () => clearTimeout(timer);
   }, [text, isDeleting, loopNum, typingSpeed, words]);
 
+  if (loading) {
+    return (
+      <section className='min-h-screen flex items-center justify-center relative'>
+        <div className='container mx-auto px-4 text-center'>
+          <div className='max-w-4xl mx-auto'>
+            <div className='animate-pulse space-y-8'>
+              <div className='w-36 h-36 bg-white/20 rounded-full mx-auto'></div>
+              <div className='h-6 bg-white/20 rounded mx-auto w-64'></div>
+              <div className='h-16 bg-white/20 rounded mx-auto w-96'></div>
+              <div className='h-12 bg-white/20 rounded mx-auto w-80'></div>
+              <div className='h-6 bg-white/20 rounded mx-auto w-48'></div>
+              <div className='flex justify-center space-x-4'>
+                <div className='h-12 bg-white/20 rounded w-32'></div>
+                <div className='h-12 bg-white/20 rounded w-32'></div>
+              </div>
+              <div className='flex justify-center space-x-6'>
+                <div className='h-12 w-12 bg-white/20 rounded-full'></div>
+                <div className='h-12 w-12 bg-white/20 rounded-full'></div>
+                <div className='h-12 w-12 bg-white/20 rounded-full'></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className='min-h-screen flex items-center justify-center relative'>
       <div className='container mx-auto px-4 text-center'>
@@ -51,24 +118,24 @@ export function Hero() {
             <div className='relative w-36 h-36 mx-auto mt-20 mb-6'>
               <img
                 src='/images/avatar.png'
-                alt='Thinh Tran'
+                alt={currentData.name}
                 className='w-full h-full rounded-full object-cover object-center shadow-2xl ring-4 ring-white/30 backdrop-blur-sm transition-transform duration-300 hover:scale-105'
                 style={{
-                  objectPosition: "center 25%", // Current setting
+                  objectPosition: "center 25%",
                 }}
               />
               <div className='absolute inset-0 rounded-full bg-gradient-to-tr from-transparent via-transparent to-white/10'></div>
             </div>
             <div className='flex items-center justify-center space-x-2 text-white/70 mb-4'>
               <MapPin className='h-4 w-4' />
-              <span>Ho Chi Minh City, Vietnam</span>
+              <span>{currentData.location}</span>
             </div>
           </div>
 
           <h1 className='text-5xl md:text-7xl font-bold mb-6 animate-slide-up'>
             <span className='text-white'>Hi, I'm </span>
             <span className='bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 bg-clip-text text-transparent'>
-              Thinh Tran
+              {currentData.name}
             </span>
           </h1>
 
@@ -81,15 +148,17 @@ export function Hero() {
           </div>
 
           <p className='text-xl text-white/80 mb-12 max-w-2xl mx-auto leading-relaxed animate-slide-up animation-delay-400'>
-            Passionate about creating exceptional digital experiences with clean
-            code and innovative solutions. Let's build something amazing
-            together.
+            {currentData.description}
           </p>
 
           <div className='flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6 mb-16 animate-slide-up animation-delay-600'>
             <Button
               size='lg'
               className='glass px-8 py-4 rounded-full transition-all duration-300 hover:scale-105 border-white/20 text-black dark:text-white hover:text-white dark:hover:text-black font-medium'
+              onClick={() => {
+                const contactSection = document.getElementById('contact');
+                contactSection?.scrollIntoView({ behavior: 'smooth' });
+              }}
             >
               <Mail className='h-5 w-5 mr-2' />
               Get In Touch
@@ -98,34 +167,44 @@ export function Hero() {
               variant='outline'
               size='lg'
               className='px-8 py-4 rounded-full transition-all duration-300 hover:scale-105 border-white/30 dark:border-white/30 border-gray-600/30 text-white dark:text-white text-gray-800 hover:bg-white/10 dark:hover:bg-white/10 hover:bg-gray-200/20'
+              onClick={() => {
+                const projectsSection = document.getElementById('projects');
+                projectsSection?.scrollIntoView({ behavior: 'smooth' });
+              }}
             >
               View My Work
             </Button>
           </div>
 
           <div className='flex items-center justify-center space-x-6 animate-slide-up animation-delay-800'>
-            <a
-              href='https://github.com/Thinhtran42'
-              target='_blank'
-              rel='noopener noreferrer'
-              className='text-white/70 hover:text-white transition-all duration-300 p-3 rounded-full hover:bg-white/10'
-            >
-              <Github className='h-6 w-6' />
-            </a>
-            <a
-              href='https://www.linkedin.com/in/thinh-tran013/'
-              target='_blank'
-              rel='noopener noreferrer'
-              className='text-white/70 hover:text-white transition-all duration-300 p-3 rounded-full hover:bg-white/10'
-            >
-              <Linkedin className='h-6 w-6' />
-            </a>
-            <a
-              href='mailto:tranthinhh013@gmail.com'
-              className='text-white/70 hover:text-white transition-all duration-300 p-3 rounded-full hover:bg-white/10'
-            >
-              <Mail className='h-6 w-6' />
-            </a>
+            {currentData.socialLinks.github && (
+              <a
+                href={currentData.socialLinks.github}
+                target='_blank'
+                rel='noopener noreferrer'
+                className='text-white/70 hover:text-white transition-all duration-300 p-3 rounded-full hover:bg-white/10'
+              >
+                <Github className='h-6 w-6' />
+              </a>
+            )}
+            {currentData.socialLinks.linkedin && (
+              <a
+                href={currentData.socialLinks.linkedin}
+                target='_blank'
+                rel='noopener noreferrer'
+                className='text-white/70 hover:text-white transition-all duration-300 p-3 rounded-full hover:bg-white/10'
+              >
+                <Linkedin className='h-6 w-6' />
+              </a>
+            )}
+            {currentData.socialLinks.email && (
+              <a
+                href={`mailto:${currentData.socialLinks.email}`}
+                className='text-white/70 hover:text-white transition-all duration-300 p-3 rounded-full hover:bg-white/10'
+              >
+                <Mail className='h-6 w-6' />
+              </a>
+            )}
           </div>
         </div>
 

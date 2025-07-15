@@ -5,7 +5,7 @@ export interface Project {
   image: string;
   technologies: string[];
   github: string;
-  demo: string;
+  demo?: string; // Make demo optional
   featured: boolean;
   createdAt?: Date;
   updatedAt?: Date;
@@ -17,7 +17,7 @@ export interface CreateProjectData {
   image: string;
   technologies: string[];
   github: string;
-  demo: string;
+  demo?: string; // Make demo optional
   featured: boolean;
 }
 

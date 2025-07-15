@@ -1,11 +1,88 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { skillCategoriesService } from "@/lib/portfolioService";
+import { SkillCategory } from "@/types/portfolio";
 
 export function Skills() {
   const sectionRef = useRef<HTMLElement>(null);
+  const [skillsData, setSkillsData] = useState<SkillCategory[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fallback data if Firebase data is not available
+  const fallbackData: SkillCategory[] = [
+    {
+      id: "fallback-1",
+      title: "Backend Development",
+      icon: "🔧",
+      skills: [
+        "Golang",
+        "C#/.NET", 
+        "Python/FastAPI",
+        "Java/Spring Boot",
+        "Gin Framework",
+      ],
+      order: 0,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      id: "fallback-2",
+      title: "Mobile Development",
+      icon: "📱",
+      skills: [
+        "Android Development",
+        "Kotlin",
+        "Jetpack Compose",
+        "Android SDK",
+      ],
+      order: 1,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      id: "fallback-3",
+      title: "Database & Storage",
+      icon: "🗄️",
+      skills: ["MongoDB", "PostgreSQL", "SQL Server", "Redis"],
+      order: 2,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      id: "fallback-4",
+      title: "Tools & DevOps",
+      icon: "⚙️",
+      skills: ["Git/GitHub", "Docker", "Microservices", "RESTful APIs"],
+      order: 3,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+  ];
+
+  useEffect(() => {
+    const fetchSkillsData = async () => {
+      try {
+        const data = await skillCategoriesService.getSkillCategories();
+        if (data && data.length > 0) {
+          // Sort by order field
+          const sortedData = data.sort((a, b) => (a.order || 0) - (b.order || 0));
+          setSkillsData(sortedData);
+        } else {
+          setSkillsData(fallbackData);
+        }
+      } catch (error) {
+        console.error('Error fetching skills data:', error);
+        setSkillsData(fallbackData);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSkillsData();
+  }, []);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -44,61 +121,56 @@ export function Skills() {
     return skillColors[index % skillColors.length];
   };
 
-  const skillCategories = [
-    {
-      title: "Backend Development",
-      icon: "🔧",
-      skills: [
-        "Golang",
-        "C#/.NET",
-        "Python/FastAPI",
-        "Java/Spring Boot",
-        "Gin Framework",
-      ],
-    },
-    {
-      title: "Mobile Development",
-      icon: "📱",
-      skills: [
-        "Android Development",
-        "Kotlin",
-        "Jetpack Compose",
-        "Android SDK",
-      ],
-    },
-    {
-      title: "Database & Storage",
-      icon: "🗄️",
-      skills: ["MongoDB", "PostgreSQL", "SQL Server", "Redis"],
-    },
-    {
-      title: "Tools & DevOps",
-      icon: "⚙️",
-      skills: ["Git/GitHub", "Docker", "Microservices", "RESTful APIs"],
-    },
-  ];
+  // Generate technologies list from all skills for the technology cloud
+  const technologies = skillsData.reduce((acc: string[], category) => {
+    return [...acc, ...category.skills];
+  }, []);
 
-  const technologies = [
-    "Golang",
-    "C#",
-    "Python",
-    "Java",
-    ".NET",
-    "Spring Boot",
-    "FastAPI",
-    "Gin",
-    "Kotlin",
-    "Android",
-    "Jetpack Compose",
-    "MongoDB",
-    "PostgreSQL",
-    "SQL Server",
-    "Git",
-    "Docker",
-    "Microservices",
-    "REST APIs",
-    "Clean Architecture",
-  ];
+  if (loading) {
+    return (
+      <section id='skills' className='py-20 relative'>
+        <div className='absolute inset-0 bg-white/5 backdrop-blur-sm'></div>
+        <div className='container mx-auto px-4'>
+          <div className='max-w-6xl mx-auto'>
+            <div className='text-center mb-16'>
+              <div className='animate-pulse space-y-4'>
+                <div className='h-12 bg-white/20 rounded mx-auto w-96'></div>
+                <div className='h-6 bg-white/20 rounded mx-auto w-[600px]'></div>
+              </div>
+            </div>
+            <div className='grid md:grid-cols-2 gap-8 mb-16'>
+              {[1, 2, 3, 4].map((i) => (
+                <Card key={i} className='glass macos-card border-white/20'>
+                  <CardContent className='p-6'>
+                    <div className='animate-pulse space-y-4'>
+                      <div className='h-8 bg-white/20 rounded w-48'></div>
+                      <div className='space-y-3'>
+                        {[1, 2, 3, 4].map((j) => (
+                          <div key={j} className='h-10 bg-white/20 rounded'></div>
+                        ))}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+            <Card className='glass macos-card border-white/20'>
+              <CardContent className='p-8'>
+                <div className='animate-pulse space-y-6'>
+                  <div className='h-8 bg-white/20 rounded mx-auto w-48'></div>
+                  <div className='flex flex-wrap gap-3 justify-center'>
+                    {Array.from({ length: 15 }).map((_, i) => (
+                      <div key={i} className='h-8 bg-white/20 rounded w-20'></div>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id='skills' ref={sectionRef} className='py-20 relative'>
@@ -119,9 +191,9 @@ export function Skills() {
 
           {/* Skill Categories */}
           <div className='grid md:grid-cols-2 gap-8 mb-16'>
-            {skillCategories.map((category, index) => (
+            {skillsData.map((category, index) => (
               <Card
-                key={index}
+                key={category.id || index}
                 className='glass macos-card border-white/20 relative z-10 group hover:border-white/40 transition-all duration-300'
               >
                 <CardContent className='p-6'>
@@ -132,7 +204,6 @@ export function Skills() {
                     </h3>
                   </div>
 
-                  {/* Option 1: Individual rows with beautiful colors */}
                   <div className='space-y-3'>
                     {category.skills.map((skill, skillIndex) => (
                       <div
@@ -147,47 +218,35 @@ export function Skills() {
                       </div>
                     ))}
                   </div>
-
-                  {/* Option 2: Badge layout with colors (uncomment to use) */}
-                  {/*
-                  <div className="flex flex-wrap gap-2">
-                    {category.skills.map((skill, skillIndex) => (
-                      <Badge
-                        key={skillIndex}
-                        variant="secondary"
-                        className={`px-3 py-1 text-white border hover:scale-105 transition-all duration-200 ${getSkillColor(skillIndex)}`}
-                      >
-                        {skill}
-                      </Badge>
-                    ))}
-                  </div>
-                  */}
                 </CardContent>
               </Card>
             ))}
           </div>
 
           {/* Technologies Cloud */}
-          <Card className='glass macos-card border-white/20 relative z-10'>
-            <CardContent className='p-8'>
-              <h3 className='text-2xl font-semibold mb-6 text-center text-white'>
-                Technology Stack
-              </h3>
-              <div className='flex flex-wrap gap-3 justify-center'>
-                {technologies.map((tech, index) => (
-                  <Badge
-                    key={index}
-                    variant='secondary'
-                    className='px-4 py-2 text-sm bg-white/20 text-white border border-white/30 hover:bg-white/30 transition-colors duration-200 cursor-pointer'
-                  >
-                    {tech}
-                  </Badge>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          {technologies.length > 0 && (
+            <Card className='glass macos-card border-white/20 relative z-10'>
+              <CardContent className='p-8'>
+                <h3 className='text-2xl font-semibold mb-6 text-center text-white'>
+                  Technology Stack
+                </h3>
+                <div className='flex flex-wrap gap-3 justify-center'>
+                  {technologies.map((tech, index) => (
+                    <Badge
+                      key={index}
+                      variant='secondary'
+                      className='px-4 py-2 text-sm bg-white/20 text-white border border-white/30 hover:bg-white/30 transition-colors duration-200 cursor-pointer'
+                    >
+                      {tech}
+                    </Badge>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
+
     </section>
   );
 }

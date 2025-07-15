@@ -77,7 +77,7 @@ export function Projects() {
               "Cloudinary",
             ],
             github: "https://github.com/Thinhtran42/task-api",
-            demo: "https://task-api-docs.herokuapp.com",
+            // No demo link for this project
             featured: false,
           },
           {
@@ -99,7 +99,7 @@ export function Projects() {
               "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=600",
             technologies: ["Node.js", "JWT", "bcrypt", "Nodemailer", "MongoDB"],
             github: "https://github.com/Thinhtran42/auth-service",
-            demo: "https://auth-service-demo.herokuapp.com",
+            // No demo link for this project
             featured: false,
           },
           {
@@ -169,20 +169,22 @@ export function Projects() {
                           <Github className='h-4 w-4' />
                         </a>
                       </Button>
-                      <Button
-                        size='sm'
-                        variant='secondary'
-                        className='bg-white/90 hover:bg-white text-black dark:text-black'
-                        asChild
-                      >
-                        <a
-                          href={project.demo}
-                          target='_blank'
-                          rel='noopener noreferrer'
+                      {project.demo && (
+                        <Button
+                          size='sm'
+                          variant='secondary'
+                          className='bg-white/90 hover:bg-white text-black dark:text-black'
+                          asChild
                         >
-                          <ExternalLink className='h-4 w-4' />
-                        </a>
-                      </Button>
+                          <a
+                            href={project.demo}
+                            target='_blank'
+                            rel='noopener noreferrer'
+                          >
+                            <ExternalLink className='h-4 w-4' />
+                          </a>
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -219,20 +221,22 @@ export function Projects() {
                         Code
                       </a>
                     </Button>
-                    <Button
-                      size='sm'
-                      className='flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white'
-                      asChild
-                    >
-                      <a
-                        href={project.demo}
-                        target='_blank'
-                        rel='noopener noreferrer'
+                    {project.demo && (
+                      <Button
+                        size='sm'
+                        className='flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white'
+                        asChild
                       >
-                        <Eye className='h-4 w-4 mr-2' />
-                        Demo
-                      </a>
-                    </Button>
+                        <a
+                          href={project.demo}
+                          target='_blank'
+                          rel='noopener noreferrer'
+                        >
+                          <Eye className='h-4 w-4 mr-2' />
+                          Demo
+                        </a>
+                      </Button>
+                    )}
                   </div>
                 </CardContent>
               </Card>

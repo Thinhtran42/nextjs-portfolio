@@ -165,13 +165,13 @@ export function ProjectForm({ project, mode }: ProjectFormProps) {
 
             {/* Demo URL */}
             <div>
-              <Label htmlFor="demo">Demo URL</Label>
+              <Label htmlFor="demo">Demo URL (Tùy chọn)</Label>
               <Input
                 id="demo"
                 type="url"
                 value={formData.demo}
                 onChange={(e) => handleInputChange('demo', e.target.value)}
-                required
+                placeholder="https://example.com (Để trống nếu không có demo)"
               />
             </div>
 

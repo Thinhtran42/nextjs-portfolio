@@ -169,7 +169,7 @@ export function ExperienceForm({ experience, mode }: ExperienceFormProps) {
               <div className="space-y-2">
                 {formData.description.map((desc, index) => (
                   <div key={index} className="flex items-start gap-2 p-3 bg-gray-50 rounded-lg">
-                    <span className="flex-1 text-sm">{desc}</span>
+                    <span className="flex-1 text-sm text-black">{desc}</span>
                     <button
                       type="button"
                       onClick={() => removeDescription(index)}

@@ -15,6 +15,8 @@ import {
   Linkedin,
   Twitter,
 } from "lucide-react";
+import { contactInfoService } from "@/lib/portfolioService";
+import { ContactInfo } from "@/types/portfolio";
 
 export function Contact() {
   const [formData, setFormData] = useState({
@@ -24,7 +26,42 @@ export function Contact() {
     message: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [contactData, setContactData] = useState<ContactInfo | null>(null);
+  const [loading, setLoading] = useState(true);
   const sectionRef = useRef<HTMLElement>(null);
+
+  // Fallback data if Firebase data is not available
+  const fallbackData = {
+    email: "tranthinhh013@gmail.com",
+    phone: "+84 (xxx) xxx-xxxx",
+    location: "Ho Chi Minh City, Vietnam",
+    socialLinks: {
+      github: "https://github.com/Thinhtran42",
+      linkedin: "https://www.linkedin.com/in/thinh-tran013/",
+      twitter: "",
+      facebook: "",
+      instagram: ""
+    },
+    contactFormEmail: "tranthinhh013@gmail.com"
+  };
+
+  useEffect(() => {
+    const fetchContactData = async () => {
+      try {
+        const data = await contactInfoService.getContactInfo();
+        if (data) {
+          setContactData(data);
+        }
+      } catch (error) {
+        console.error('Error fetching contact data:', error);
+        // Will use fallback data
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchContactData();
+  }, []);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -66,39 +103,103 @@ export function Contact() {
     });
   };
 
+  // Use Firebase data if available, otherwise use fallback
+  const currentData = contactData || fallbackData;
+
   const contactInfo = [
     {
       icon: Mail,
       title: "Email",
-      content: "tranthinhh013@gmail.com",
-      href: "mailto:tranthinhh013@gmail.com",
+      content: currentData.email,
+      href: `mailto:${currentData.email}`,
     },
     {
       icon: Phone,
       title: "Phone",
-      content: "+84 (xxx) xxx-xxxx",
-      href: "tel:+84xxxxxxxxx",
+      content: currentData.phone || "Contact me via email",
+      href: currentData.phone ? `tel:${currentData.phone.replace(/[^\d+]/g, '')}` : `mailto:${currentData.email}`,
     },
     {
       icon: MapPin,
       title: "Location",
-      content: "Ho Chi Minh City, Vietnam",
-      href: "https://maps.google.com/?q=Ho+Chi+Minh+City,+Vietnam",
+      content: currentData.location,
+      href: `https://maps.google.com/?q=${encodeURIComponent(currentData.location)}`,
     },
   ];
 
   const socialLinks = [
-    {
+    currentData.socialLinks.github && {
       icon: Github,
-      href: "https://github.com/Thinhtran42",
+      href: currentData.socialLinks.github,
       label: "GitHub",
     },
-    {
+    currentData.socialLinks.linkedin && {
       icon: Linkedin,
-      href: "https://www.linkedin.com/in/thinh-tran013/",
+      href: currentData.socialLinks.linkedin,
       label: "LinkedIn",
     },
-  ];
+    currentData.socialLinks.twitter && {
+      icon: Twitter,
+      href: currentData.socialLinks.twitter,
+      label: "Twitter",
+    },
+  ].filter(Boolean);
+
+  if (loading) {
+    return (
+      <section id='contact' className='py-20 relative'>
+        <div className='absolute inset-0 bg-white/5 backdrop-blur-sm'></div>
+        <div className='container mx-auto px-4'>
+          <div className='max-w-6xl mx-auto'>
+            <div className='text-center mb-16'>
+              <div className='animate-pulse space-y-4'>
+                <div className='h-12 bg-white/20 rounded mx-auto w-72'></div>
+                <div className='h-6 bg-white/20 rounded mx-auto w-96'></div>
+              </div>
+            </div>
+            <div className='grid lg:grid-cols-2 gap-12'>
+              <Card className='glass macos-card border-white/20'>
+                <CardContent className='p-8'>
+                  <div className='animate-pulse space-y-6'>
+                    <div className='h-8 bg-white/20 rounded w-48'></div>
+                    <div className='grid sm:grid-cols-2 gap-4'>
+                      <div className='h-20 bg-white/20 rounded'></div>
+                      <div className='h-20 bg-white/20 rounded'></div>
+                    </div>
+                    <div className='h-20 bg-white/20 rounded'></div>
+                    <div className='h-32 bg-white/20 rounded'></div>
+                    <div className='h-12 bg-white/20 rounded'></div>
+                  </div>
+                </CardContent>
+              </Card>
+              <div className='space-y-8'>
+                {[1, 2, 3].map((i) => (
+                  <Card key={i} className='glass macos-card border-white/20'>
+                    <CardContent className='p-8'>
+                      <div className='animate-pulse space-y-4'>
+                        <div className='h-8 bg-white/20 rounded w-32'></div>
+                        <div className='space-y-4'>
+                          {[1, 2, 3].map((j) => (
+                            <div key={j} className='flex items-center space-x-4'>
+                              <div className='h-12 w-12 bg-white/20 rounded-full'></div>
+                              <div className='space-y-2 flex-1'>
+                                <div className='h-4 bg-white/20 rounded w-24'></div>
+                                <div className='h-4 bg-white/20 rounded w-32'></div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id='contact' ref={sectionRef} className='py-20 relative'>
@@ -239,27 +340,29 @@ export function Contact() {
                 </CardContent>
               </Card>
 
-              <Card className='glass macos-card border-white/20 relative z-10'>
-                <CardContent className='p-8'>
-                  <h3 className='text-2xl font-semibold mb-6 text-white'>
-                    Follow Me
-                  </h3>
-                  <div className='flex space-x-4'>
-                    {socialLinks.map((social, index) => (
-                      <a
-                        key={index}
-                        href={social.href}
-                        target='_blank'
-                        rel='noopener noreferrer'
-                        className='p-3 bg-white/20 rounded-full hover:bg-white/30 transition-colors duration-200'
-                        aria-label={social.label}
-                      >
-                        <social.icon className='h-6 w-6 text-white' />
-                      </a>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+              {socialLinks.length > 0 && (
+                <Card className='glass macos-card border-white/20 relative z-10'>
+                  <CardContent className='p-8'>
+                    <h3 className='text-2xl font-semibold mb-6 text-white'>
+                      Follow Me
+                    </h3>
+                    <div className='flex space-x-4'>
+                      {socialLinks.map((social: any, index) => (
+                        <a
+                          key={index}
+                          href={social.href}
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className='p-3 bg-white/20 rounded-full hover:bg-white/30 transition-colors duration-200'
+                          aria-label={social.label}
+                        >
+                          <social.icon className='h-6 w-6 text-white' />
+                        </a>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
               <Card className='glass macos-card border-white/20 overflow-hidden relative z-10'>
                 <CardContent className='p-0'>
