@@ -48,7 +48,7 @@ export function Hero() {
       <div className='container mx-auto px-4 text-center'>
         <div className='max-w-4xl mx-auto'>
           <div className='mb-8 animate-fade-in'>
-            <div className='relative w-36 h-36 mx-auto mb-6'>
+            <div className='relative w-36 h-36 mx-auto mt-20 mb-6'>
               <img
                 src='/images/avatar.png'
                 alt='Thinh Tran'
@@ -89,7 +89,7 @@ export function Hero() {
           <div className='flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6 mb-16 animate-slide-up animation-delay-600'>
             <Button
               size='lg'
-              className='glass text-white px-8 py-4 rounded-full transition-all duration-300 hover:scale-105 border-white/20'
+              className='glass px-8 py-4 rounded-full transition-all duration-300 hover:scale-105 border-white/20 text-black dark:text-white hover:text-white dark:hover:text-black font-medium'
             >
               <Mail className='h-5 w-5 mr-2' />
               Get In Touch
@@ -97,7 +97,7 @@ export function Hero() {
             <Button
               variant='outline'
               size='lg'
-              className='px-8 py-4 rounded-full transition-all duration-300 hover:scale-105 border-white/30 text-white hover:bg-white/10'
+              className='px-8 py-4 rounded-full transition-all duration-300 hover:scale-105 border-white/30 dark:border-white/30 border-gray-600/30 text-white dark:text-white text-gray-800 hover:bg-white/10 dark:hover:bg-white/10 hover:bg-gray-200/20'
             >
               View My Work
             </Button>
