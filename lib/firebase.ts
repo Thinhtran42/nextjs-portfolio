@@ -2,10 +2,9 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 
-// Production-ready Firebase config
+// Safe Firebase config using only environment variables
 const getFirebaseConfig = () => {
-  // Try to get from environment variables first
-  const fromEnv = {
+  const config = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
     authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
     projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
@@ -14,26 +13,25 @@ const getFirebaseConfig = () => {
     appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
   };
 
-  // Check if all env vars are available
-  if (Object.values(fromEnv).every(val => val)) {
-    return fromEnv;
+  // Check if all required environment variables are present
+  const missingVars = Object.entries(config)
+    .filter(([key, value]) => !value)
+    .map(([key]) => key);
+
+  if (missingVars.length > 0) {
+    const envVarNames = missingVars.map(key => {
+      const envName = key.replace(/([A-Z])/g, '_$1').toUpperCase();
+      return `NEXT_PUBLIC_FIREBASE_${envName.replace('NEXT_PUBLIC_FIREBASE_', '')}`;
+    });
+    
+    throw new Error(
+      `Missing required Firebase environment variables: ${envVarNames.join(', ')}\n` +
+      `Please create a .env.local file with your Firebase configuration.\n` +
+      `See SETUP-FIREBASE.md for detailed instructions.`
+    );
   }
 
-  // Fallback for local development only
-  if (process.env.NODE_ENV === 'development') {
-    console.warn('Using fallback Firebase config for local development');
-    return {
-      apiKey: "AIzaSyCIidMAIjrOiCkgx9vvftc4SsyWslECtJo",
-      authDomain: "my-portfolio-2af00.firebaseapp.com",
-      projectId: "my-portfolio-2af00",
-      storageBucket: "my-portfolio-2af00.firebasestorage.app",
-      messagingSenderId: "380859987341",
-      appId: "1:380859987341:web:93d69f3c62a3af20e5f9c4",
-    };
-  }
-
-  // Throw error in production if env vars are missing
-  throw new Error('Firebase environment variables are required for production deployment');
+  return config;
 };
 
 const firebaseConfig = getFirebaseConfig();
